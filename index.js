@@ -22,6 +22,7 @@ async function run() {
         const serviceCollection = client.db('EduSphere').collection('services');
         const reviewCollection = client.db('EduSphere').collection('reviews');
 
+
         app.get('/service', async (req, res) => {
             const query = {}
             const cursor = serviceCollection.find(query);
@@ -51,6 +52,19 @@ async function run() {
         app.get('/reviews', async (req, res) => {
             const query = {}
             const cursor = reviewCollection.find(query);
+            const service = await cursor.toArray();
+            res.send(service);
+        });
+
+        app.post('/service', async (req, res) => {
+            const review = req.body;
+            const result = await serviceCollection.insertOne(review);
+            res.send(result);
+        });
+
+        app.get('/service', async (req, res) => {
+            const query = {}
+            const cursor = serviceCollection.find(query);
             const service = await cursor.toArray();
             res.send(service);
         });
