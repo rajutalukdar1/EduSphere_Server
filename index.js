@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
@@ -23,6 +24,12 @@ async function run() {
         const reviewCollection = client.db('EduSphere').collection('reviews');
 
 
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '25d' })
+            res.send({ token })
+        })
+
         app.get('/service', async (req, res) => {
             const query = {}
             const cursor = serviceCollection.find(query);
@@ -43,18 +50,26 @@ async function run() {
             res.send(service);
         })
 
+        app.get('/reviews', async (req, res) => {
+            let query = {}
+            if (req.query.service) {
+                query = {
+                    service: req.query.service
+                }
+            };
+            const cursor = reviewCollection.find(query)
+            const orders = await cursor.toArray();
+            res.send(orders)
+        });
+
+
         app.post('/reviews', async (req, res) => {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
             res.send(result);
         });
 
-        app.get('/reviews', async (req, res) => {
-            const query = {}
-            const cursor = reviewCollection.find(query);
-            const service = await cursor.toArray();
-            res.send(service);
-        });
+
 
         app.post('/service', async (req, res) => {
             const review = req.body;
